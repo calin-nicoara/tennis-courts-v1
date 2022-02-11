@@ -11,6 +11,7 @@ import org.junit.runners.MethodSorters;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -24,6 +25,7 @@ public class ScheduleServiceTest {
     private ScheduleService scheduleService;
 
     @Test
+    @Transactional
     public void testAddSchedule() {
         long tennisCourtId = 1L;
         LocalDateTime startTime = LocalDateTime.now();

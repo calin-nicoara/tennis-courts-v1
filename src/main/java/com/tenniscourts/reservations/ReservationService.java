@@ -2,7 +2,9 @@ package com.tenniscourts.reservations;
 
 import com.tenniscourts.exceptions.EntityNotFoundException;
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -10,14 +12,21 @@ import java.time.temporal.ChronoUnit;
 
 @Service
 @AllArgsConstructor
+@Transactional(readOnly = true)
 public class ReservationService {
 
-    private final ReservationRepository reservationRepository;
+    @Value("${tennis-court.reservation.price}")
+    private final BigDecimal reservationPrice;
 
+    private final ReservationRepository reservationRepository;
     private final ReservationMapper reservationMapper;
 
+    @Transactional
     public ReservationDTO bookReservation(CreateReservationRequestDTO createReservationRequestDTO) {
-        throw new UnsupportedOperationException();
+        Reservation reservationToSave = reservationMapper.map(createReservationRequestDTO);
+        reservationToSave.setValue(reservationPrice);
+
+        return reservationMapper.map(reservationRepository.save(reservationToSave));
     }
 
     public ReservationDTO findReservation(Long reservationId) {
@@ -26,6 +35,7 @@ public class ReservationService {
         });
     }
 
+    @Transactional
     public ReservationDTO cancelReservation(Long reservationId) {
         return reservationMapper.map(this.cancel(reservationId));
     }
@@ -73,6 +83,7 @@ public class ReservationService {
 
     /*TODO: This method actually not fully working, find a way to fix the issue when it's throwing the error:
             "Cannot reschedule to the same slot.*/
+    @Transactional
     public ReservationDTO rescheduleReservation(Long previousReservationId, Long scheduleId) {
         Reservation previousReservation = cancel(previousReservationId);
 
