@@ -1,6 +1,5 @@
 package com.tenniscourts.reservations;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
