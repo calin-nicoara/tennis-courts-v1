@@ -28,7 +28,7 @@ public class GuestService {
 
         if(StringUtils.hasText(guestFilterModel.getNameLike())) {
             baseSpecification = baseSpecification.and((root, query, criteriaBuilder) ->
-                    criteriaBuilder.equal(root.get("name"), guestFilterModel.getNameLike() + "%"));
+                    criteriaBuilder.like(criteriaBuilder.lower(root.get("name")), guestFilterModel.getNameLike().toLowerCase() + "%"));
         }
 
         List<Guest> guests =  guestRepository.findAll(baseSpecification, pageRequest).getContent();
