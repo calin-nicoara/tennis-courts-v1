@@ -2,6 +2,8 @@ package com.tenniscourts.schedules;
 
 import com.tenniscourts.config.BaseRestController;
 import lombok.AllArgsConstructor;
+
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -31,8 +33,8 @@ public class ScheduleController extends BaseRestController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ScheduleDTO>> findSchedulesByDates(@RequestParam("start-date") LocalDate startDate,
-                                                                  @RequestParam("end-date") LocalDate endDate) {
+    public ResponseEntity<List<ScheduleDTO>> findSchedulesByDates(@RequestParam("start-date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+                                                                  @RequestParam("end-date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
         return ResponseEntity.ok(scheduleService.findSchedulesByDates(LocalDateTime.of(startDate, LocalTime.of(0, 0)), LocalDateTime.of(endDate, LocalTime.of(23, 59))));
     }
 
