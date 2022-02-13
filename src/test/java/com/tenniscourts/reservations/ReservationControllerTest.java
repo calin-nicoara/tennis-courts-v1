@@ -1,6 +1,7 @@
 package com.tenniscourts.reservations;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
@@ -9,14 +10,16 @@ import org.junit.runners.MethodSorters;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
@@ -32,29 +35,32 @@ public class ReservationControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @Autowired
-    private ReservationRepository reservationRepository;
-
     @Transactional
     @Test
     @Sql("/sql/reservations.sql")
     public void testAddReservation() throws Exception {
+        Long guestId = -1L;
+        Long scheduleId = -1L;
+
         CreateReservationRequestDTO createReservationRequestDTO = new CreateReservationRequestDTO();
-        createReservationRequestDTO.setGuestId(-1L);
-        createReservationRequestDTO.setScheduleId(-1L);
+        createReservationRequestDTO.setGuestId(guestId);
+        createReservationRequestDTO.setScheduleId(scheduleId);
 
-         this.mvc.perform(post("/reservations")
+        MvcResult mvcResult = this.mvc.perform(post("/reservations")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(createReservationRequestDTO)));
+                .content(objectMapper.writeValueAsString(createReservationRequestDTO))).andReturn();
 
-        List<Reservation> reservations = reservationRepository.findBySchedule_Id(-1L);
+        String resourceLocation = mvcResult.getResponse().getHeader(HttpHeaders.LOCATION);
+        Assertions.assertNotNull(resourceLocation);
 
-        Assertions.assertEquals(1L, reservations.size());
+        MvcResult mvcResultGet = this.mvc.perform(MockMvcRequestBuilders.get(resourceLocation)).andReturn();
 
-        Reservation reservation = reservations.get(0);
+        ReservationDTO reservationDTO = objectMapper.readValue(mvcResultGet.getResponse().getContentAsString(), ReservationDTO.class);
 
-        Assertions.assertEquals(-1L, reservation.getSchedule().getId());
-        Assertions.assertEquals(-1L, reservation.getGuest().getId());
-        Assertions.assertEquals(BigDecimal.valueOf(10), reservation.getValue());
+        Assertions.assertEquals(scheduleId, reservationDTO.getScheduleId());
+        Assertions.assertEquals(guestId, reservationDTO.getGuestId());
+        Assertions.assertEquals(BigDecimal.valueOf(10), reservationDTO.getValue());
     }
+
+
 }
